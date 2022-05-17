@@ -1,0 +1,5 @@
+.env
+local_database/db.json
+
+public/*
+!public/.gitkeep

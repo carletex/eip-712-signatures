@@ -23,12 +23,13 @@
     "ship": "yarn workspace @scaffold-eth/react-app ship",
     "theme": "yarn workspace @scaffold-eth/react-app theme",
     "watch-theme": "yarn workspace @scaffold-eth/react-app watch",
-    "postinstall": "husky install"
+    "postinstall": "husky install",
+    "backend": "cd packages/backend && nodemon --ignore 'local_database/db.json' index"
   },
   "workspaces": {
     "packages": [
       "packages/*"
-    ],
+    ]
   },
   "dependencies": {},
   "devDependencies": {
