@@ -11,6 +11,13 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+app.post("/receive-signature", async (req, res) => {
+  const { value, signature } = req.body;
+  console.log("receive-signature", value, signature);
+
+  res.sendStatus(200);
+});
+
 const PORT = process.env.PORT || 49832;
 
 const server = app.listen(PORT, () => {
