@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Checkbox, Input, notification, Space } from "antd";
+import { Button, Checkbox, Input, notification, Space, Tooltip } from "antd";
 import axios from "axios";
 import useTypedSigner from "../hooks/useTypedSigner";
 
@@ -32,14 +32,23 @@ const INITIAL_FORM_STATE = {
 const SignMessage = ({ userSigner }) => {
   // The Form to collect the message
   const [formState, setFormState] = useState(INITIAL_FORM_STATE);
+  // We'll use it to try a reply attack
+  const [lastFormState, setLastFormState] = useState(null);
   const typedSigner = useTypedSigner(userSigner, eip712domain);
 
-  const handleClick = async () => {
-    const values = {
-      ...formState,
-      // Add the current timestamp for replay attack protection (check backend/index.js)
-      timestamp: Date.now(),
-    };
+  const handleSubmit = async (replay = false) => {
+    let values;
+    if (replay) {
+      // Replay attack. Used stored values.
+      values = lastFormState;
+    } else {
+      // Regular values.
+      values = {
+        ...formState,
+        // Add the current timestamp for replay attack protection (check backend/index.js)
+        timestamp: Date.now(),
+      };
+    }
 
     // 1. Sign the values to get the signature.
     let signature;
@@ -72,12 +81,15 @@ const SignMessage = ({ userSigner }) => {
         message: "Request error",
         description: `Error: ${e.message}`,
       });
+      return;
     }
 
     notification.success({
       message: "Success",
       description: response,
     });
+    setFormState(INITIAL_FORM_STATE);
+    setLastFormState(values);
   };
 
   return (
@@ -86,6 +98,7 @@ const SignMessage = ({ userSigner }) => {
         <Space direction="vertical">
           <Input
             placeholder="Message"
+            value={formState.message}
             onChange={event =>
               setFormState(prevFormState => ({
                 ...prevFormState,
@@ -105,9 +118,18 @@ const SignMessage = ({ userSigner }) => {
           >
             Mark as urgent
           </Checkbox>
-          <Button onClick={handleClick} type="primary" style={{ marginTop: 15 }}>
-            Sign & Send
-          </Button>
+          <Space direction="vertical">
+            <Button onClick={() => handleSubmit(false)} type="primary" style={{ marginTop: 15 }}>
+              Sign & Send
+            </Button>
+            {lastFormState && (
+              <Tooltip title="We'll sign the same values and send them to the server">
+                <Button onClick={() => handleSubmit(true)} type="primary" danger>
+                  Attempt reply attack
+                </Button>
+              </Tooltip>
+            )}
+          </Space>
         </Space>
       </div>
     </div>
