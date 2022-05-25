@@ -11,7 +11,7 @@ const serverUrl = "http://localhost:49832";
 
 const sendSignatureToServer = async (value, signature) => {
   try {
-    await axios.post(`${serverUrl}/receive-message`, { value, signature });
+    await axios.post(`${serverUrl}/new-message`, { value, signature });
   } catch (error) {
     console.error(error);
   }
