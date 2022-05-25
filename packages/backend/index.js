@@ -56,15 +56,15 @@ const getTypesForAction = action => {
 
 // Save a new message
 app.post("/new-message", async (req, res) => {
-  const { value, signature } = req.body;
-  console.log("new-message", value, signature);
+  const { values, signature } = req.body;
+  console.log("new-message", values, signature);
 
   const types = getTypesForAction("new-message");
-  const signerAddress = recoverSignerAddress(types, value, signature);
+  const signerAddress = recoverSignerAddress(types, values, signature);
 
   console.log("signerAddress", signerAddress);
 
-  res.sendStatus(200);
+  res.status(200).send("Message saved successfully");
 });
 
 const PORT = process.env.PORT || 49832;

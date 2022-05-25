@@ -8,7 +8,7 @@ import "./App.css";
 import { Account, Faucet, GasGauge, Header, Ramp, ThemeSwitch, NetworkDisplay, NetworkSwitch } from "./components";
 import { NETWORKS, ALCHEMY_KEY } from "./constants";
 import { Web3ModalSetup } from "./helpers";
-import { Home, ExampleUI } from "./views";
+import { SignMessage, ExampleUI } from "./views";
 import { useStaticJsonRPC } from "./hooks";
 
 const { ethers } = require("ethers");
@@ -192,7 +192,7 @@ function App(props) {
       />
       <Menu style={{ textAlign: "center", marginTop: 20 }} selectedKeys={[location.pathname]} mode="horizontal">
         <Menu.Item key="/">
-          <Link to="/">App Home</Link>
+          <Link to="/">Sign Message</Link>
         </Menu.Item>
         <Menu.Item key="/exampleui">
           <Link to="/exampleui">ExampleUI</Link>
@@ -201,8 +201,7 @@ function App(props) {
 
       <Switch>
         <Route exact path="/">
-          {/* pass in any web3 props to this Home component. For example, yourLocalBalance */}
-          <Home userSigner={userSigner} />
+          <SignMessage userSigner={userSigner} />
         </Route>
         <Route path="/exampleui">
           <ExampleUI
