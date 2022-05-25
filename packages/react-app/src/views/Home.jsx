@@ -11,7 +11,7 @@ const serverUrl = "http://localhost:49832";
 
 const sendSignatureToServer = async (value, signature) => {
   try {
-    await axios.post(`${serverUrl}/receive-signature`, { value, signature });
+    await axios.post(`${serverUrl}/receive-message`, { value, signature });
   } catch (error) {
     console.error(error);
   }
@@ -22,7 +22,7 @@ function Home({ userSigner }) {
     async (types, value) => {
       return await userSigner._signTypedData(eip712domain, types, value);
     },
-    [userSigner, eip712domain],
+    [userSigner],
   );
 
   const handleClick = async () => {
@@ -33,7 +33,7 @@ function Home({ userSigner }) {
 
     const signature = await typedSigner(
       {
-        Proposal: [
+        MessageData: [
           { name: "message", type: "string" },
           { name: "urgent", type: "bool" },
         ],
