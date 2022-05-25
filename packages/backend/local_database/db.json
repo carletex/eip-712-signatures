@@ -1,8 +1,0 @@
-{
-    "key": "value",
-    "key/test/a": "value",
-    "test": {
-        "a": 2,
-        "name": "mith"
-    }
-}

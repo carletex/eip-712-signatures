@@ -2,9 +2,8 @@ const express = require("express");
 const cors = require("cors");
 const { ethers } = require("ethers");
 const bodyParser = require("body-parser");
-const JSONdb = require("simple-json-db");
+const database = require("./database");
 
-const db = new JSONdb("./local_database/db.json");
 const app = express();
 
 app.use(cors());
@@ -47,6 +46,7 @@ const getTypesForAction = action => {
         MessageData: [
           { name: "message", type: "string" },
           { name: "urgent", type: "bool" },
+          { name: "timestamp", type: "uint256" },
         ],
       };
     default:
@@ -63,6 +63,27 @@ app.post("/new-message", async (req, res) => {
   const signerAddress = recoverSignerAddress(types, values, signature);
 
   console.log("signerAddress", signerAddress);
+
+  const signerData = database.getUserByAddress(signerAddress);
+
+  // Replay attack protection.
+  //
+  // It is very important to make sure the application behaves correctly
+  // when it gets the same signed message twice.
+  //
+  // In this case we are requiring higher timestamps
+  // (saving the last timestamp used)
+  if (signerData && signerData.lastTimestamp >= values.timestamp) {
+    return res.status(401).send("Signed message is no longer valid");
+  }
+
+  if (signerData) {
+    // Existing user. We'll save the message timestamp as the «lastTimestamp»
+    await database.updateUser(signerAddress, values);
+  } else {
+    // New user
+    await database.createUser(signerAddress, values);
+  }
 
   res.status(200).send("Message saved successfully");
 });

@@ -35,6 +35,12 @@ const SignMessage = ({ userSigner }) => {
   const typedSigner = useTypedSigner(userSigner, eip712domain);
 
   const handleClick = async () => {
+    const values = {
+      ...formState,
+      // Add the current timestamp for replay attack protection (check backend/index.js)
+      timestamp: Date.now(),
+    };
+
     // 1. Sign the values to get the signature.
     let signature;
     try {
@@ -43,10 +49,11 @@ const SignMessage = ({ userSigner }) => {
         MessageData: [
           { name: "message", type: "string" },
           { name: "urgent", type: "bool" },
+          { name: "timestamp", type: "uint256" },
         ],
       };
 
-      signature = await typedSigner(messageTypes, formState);
+      signature = await typedSigner(messageTypes, values);
     } catch (e) {
       notification.error({
         message: "Can't get signature",
@@ -59,7 +66,7 @@ const SignMessage = ({ userSigner }) => {
     // 2. Make request to the server.
     let response;
     try {
-      response = await sendNewMessageRequest({ values: formState, signature });
+      response = await sendNewMessageRequest({ values, signature });
     } catch (e) {
       notification.error({
         message: "Request error",
