@@ -1,5 +1,5 @@
-import React from "react";
-import { Button, notification } from "antd";
+import React, { useState } from "react";
+import { Button, Checkbox, Input, notification, Space } from "antd";
 import axios from "axios";
 import useTypedSigner from "../hooks/useTypedSigner";
 
@@ -24,27 +24,29 @@ const eip712domain = {
   version: "1.0.0",
 };
 
-// Type definitions for Message
-const messageTypes = {
-  MessageData: [
-    { name: "message", type: "string" },
-    { name: "urgent", type: "bool" },
-  ],
+const INITIAL_FORM_STATE = {
+  message: "",
+  urgent: false,
 };
 
 const SignMessage = ({ userSigner }) => {
+  // The Form to collect the message
+  const [formState, setFormState] = useState(INITIAL_FORM_STATE);
   const typedSigner = useTypedSigner(userSigner, eip712domain);
 
   const handleClick = async () => {
-    const values = {
-      message: "My message to sign",
-      urgent: true,
-    };
-
     // 1. Sign the values to get the signature.
     let signature;
     try {
-      signature = await typedSigner(messageTypes, values);
+      // Type definitions for Message
+      const messageTypes = {
+        MessageData: [
+          { name: "message", type: "string" },
+          { name: "urgent", type: "bool" },
+        ],
+      };
+
+      signature = await typedSigner(messageTypes, formState);
     } catch (e) {
       notification.error({
         message: "Can't get signature",
@@ -57,7 +59,7 @@ const SignMessage = ({ userSigner }) => {
     // 2. Make request to the server.
     let response;
     try {
-      response = await sendNewMessageRequest({ values, signature });
+      response = await sendNewMessageRequest({ values: formState, signature });
     } catch (e) {
       notification.error({
         message: "Request error",
@@ -74,7 +76,32 @@ const SignMessage = ({ userSigner }) => {
   return (
     <div>
       <div style={{ margin: 32 }}>
-        <Button onClick={handleClick}>Sign!</Button>
+        <Space direction="vertical">
+          <Input
+            placeholder="Message"
+            onChange={event =>
+              setFormState(prevFormState => ({
+                ...prevFormState,
+                message: event.target.value,
+              }))
+            }
+            style={{ width: 450, maxWidth: "80%" }}
+          />
+          <Checkbox
+            checked={formState.urgent}
+            onChange={() =>
+              setFormState(prevFormState => ({
+                ...prevFormState,
+                urgent: !prevFormState.urgent,
+              }))
+            }
+          >
+            Mark as urgent
+          </Checkbox>
+          <Button onClick={handleClick} type="primary" style={{ marginTop: 15 }}>
+            Sign & Send
+          </Button>
+        </Space>
       </div>
     </div>
   );
