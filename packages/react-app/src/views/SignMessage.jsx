@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Button, Checkbox, Input, notification, Space, Tooltip } from "antd";
 import axios from "axios";
 import useTypedSigner from "../hooks/useTypedSigner";
+import Text from "antd/es/typography/Text";
+import { Link } from "react-router-dom";
 
 const serverUrl = "http://localhost:49832";
 // Send New Message Request to server.
@@ -93,46 +95,63 @@ const SignMessage = ({ userSigner }) => {
   };
 
   return (
-    <div>
-      <div style={{ margin: 32 }}>
+    <Space direction="vertical" style={{ margin: 32 }}>
+      <Space direction="vertical" size="middle">
+        <Text>
+          Craft a message & sign it using the{" "}
+          <Link href="https://eips.ethereum.org/EIPS/eip-712" target="_blank">
+            EIP712 standard
+          </Link>
+          .
+        </Text>
+        <Text>
+          You can find the front-end code in <Text code>packages/react-app/src/views/SignMessage.jsx</Text>
+        </Text>
+        <Text>
+          The signed message will be verified and stored by the back-end server. Check{" "}
+          <Text code>packages/backend/index.js</Text>
+        </Text>
+        <Text>
+          Once you send a valid signed message, you can attempt a <Text type="danger">replay attack</Text>.
+        </Text>
+      </Space>
+      <Space direction="vertical" style={{ margin: 32 }}>
+        <Input
+          placeholder="Message"
+          value={formState.message}
+          onChange={event =>
+            setFormState(prevFormState => ({
+              ...prevFormState,
+              message: event.target.value,
+            }))
+          }
+          style={{ width: 450, maxWidth: "80%" }}
+        />
+        <Checkbox
+          checked={formState.urgent}
+          onChange={() =>
+            setFormState(prevFormState => ({
+              ...prevFormState,
+              urgent: !prevFormState.urgent,
+            }))
+          }
+        >
+          Mark as urgent
+        </Checkbox>
         <Space direction="vertical">
-          <Input
-            placeholder="Message"
-            value={formState.message}
-            onChange={event =>
-              setFormState(prevFormState => ({
-                ...prevFormState,
-                message: event.target.value,
-              }))
-            }
-            style={{ width: 450, maxWidth: "80%" }}
-          />
-          <Checkbox
-            checked={formState.urgent}
-            onChange={() =>
-              setFormState(prevFormState => ({
-                ...prevFormState,
-                urgent: !prevFormState.urgent,
-              }))
-            }
-          >
-            Mark as urgent
-          </Checkbox>
-          <Space direction="vertical">
-            <Button onClick={() => handleSubmit(false)} type="primary" style={{ marginTop: 15 }}>
-              Sign & Send
-            </Button>
-            {lastFormState && (
-              <Tooltip title="We'll sign the same values and send them to the server">
-                <Button onClick={() => handleSubmit(true)} type="primary" danger>
-                  Attempt reply attack
-                </Button>
-              </Tooltip>
-            )}
-          </Space>
+          <Button onClick={() => handleSubmit(false)} type="primary" style={{ marginTop: 15 }}>
+            Sign & Send
+          </Button>
+          {lastFormState && (
+            <Tooltip title="We'll sign the same values and send them to the server">
+              <Button onClick={() => handleSubmit(true)} type="primary" danger>
+                Attempt reply attack
+              </Button>
+            </Tooltip>
+          )}
         </Space>
-      </div>
-    </div>
+      </Space>
+    </Space>
   );
 };
 
