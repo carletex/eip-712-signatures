@@ -24,6 +24,9 @@ const sendNewMessageRequest = async ({ values, signature }) => {
 const eip712domain = {
   name: "Scaffold-eth EIP-712",
   version: "1.0.0",
+  // --- Other fields
+  // chainId
+  // verifyingContract
 };
 
 const INITIAL_FORM_STATE = {
@@ -35,22 +38,16 @@ const SignMessage = ({ userSigner }) => {
   // The Form to collect the message
   const [formState, setFormState] = useState(INITIAL_FORM_STATE);
   // We'll use it to try a reply attack
-  const [lastFormState, setLastFormState] = useState(null);
+  const [lastPayload, setLastPayload] = useState(null);
   const typedSigner = useTypedSigner(userSigner, eip712domain);
 
-  const handleSubmit = async (replay = false) => {
-    let values;
-    if (replay) {
-      // Replay attack. Used stored values.
-      values = lastFormState;
-    } else {
-      // Regular values.
-      values = {
-        ...formState,
-        // Add the current timestamp for replay attack protection (check backend/index.js)
-        timestamp: Date.now(),
-      };
-    }
+  // Sign the message and send it to the server.
+  const signAndSendMessage = async () => {
+    let values = {
+      ...formState,
+      // Add the current timestamp for replay attack protection (check backend/index.js)
+      timestamp: Date.now(),
+    };
 
     // 1. Sign the values to get the signature.
     let signature;
@@ -91,11 +88,33 @@ const SignMessage = ({ userSigner }) => {
       description: response,
     });
     setFormState(INITIAL_FORM_STATE);
-    setLastFormState(values);
+    setLastPayload({ values, signature });
+  };
+
+  // Send to the server the previous payload
+  const sendReplayAttack = async () => {
+    let response;
+    try {
+      response = await sendNewMessageRequest({
+        values: lastPayload.values,
+        signature: lastPayload.signature,
+      });
+    } catch (e) {
+      notification.error({
+        message: "Request error",
+        description: `Error: ${e.message}`,
+      });
+      return;
+    }
+
+    notification.success({
+      message: "Success",
+      description: response,
+    });
   };
 
   return (
-    <Space direction="vertical" style={{ margin: 32 }}>
+    <Space direction="vertical" style={{ margin: 32 }} size="middle">
       <Space direction="vertical" size="middle">
         <Text>
           Craft a message & sign it using the{" "}
@@ -115,42 +134,44 @@ const SignMessage = ({ userSigner }) => {
           Once you send a valid signed message, you can attempt a <Text type="danger">replay attack</Text>.
         </Text>
       </Space>
-      <Space direction="vertical" style={{ margin: 32 }}>
-        <Input
-          placeholder="Message"
-          value={formState.message}
-          onChange={event =>
-            setFormState(prevFormState => ({
-              ...prevFormState,
-              message: event.target.value,
-            }))
-          }
-          style={{ width: 450, maxWidth: "80%" }}
-        />
-        <Checkbox
-          checked={formState.urgent}
-          onChange={() =>
-            setFormState(prevFormState => ({
-              ...prevFormState,
-              urgent: !prevFormState.urgent,
-            }))
-          }
-        >
-          Mark as urgent
-        </Checkbox>
-        <Space direction="vertical">
-          <Button onClick={() => handleSubmit(false)} type="primary" style={{ marginTop: 15 }}>
-            Sign & Send
-          </Button>
-          {lastFormState && (
-            <Tooltip title="We'll sign the same values and send them to the server">
-              <Button onClick={() => handleSubmit(true)} type="primary" danger>
-                Attempt reply attack
-              </Button>
-            </Tooltip>
-          )}
+      <div style={{ background: "#f3f3f3" }}>
+        <Space direction="vertical" style={{ margin: 32 }}>
+          <Input
+            placeholder="Message"
+            value={formState.message}
+            onChange={event =>
+              setFormState(prevFormState => ({
+                ...prevFormState,
+                message: event.target.value,
+              }))
+            }
+            style={{ width: 450, maxWidth: "80%" }}
+          />
+          <Checkbox
+            checked={formState.urgent}
+            onChange={() =>
+              setFormState(prevFormState => ({
+                ...prevFormState,
+                urgent: !prevFormState.urgent,
+              }))
+            }
+          >
+            Mark as urgent
+          </Checkbox>
+          <Space direction="vertical">
+            <Button onClick={signAndSendMessage} type="primary" style={{ marginTop: 15 }}>
+              Sign & Send
+            </Button>
+            {lastPayload && (
+              <Tooltip title="We'll sign the same values and send them to the server">
+                <Button onClick={sendReplayAttack} type="primary" danger>
+                  Attempt reply attack
+                </Button>
+              </Tooltip>
+            )}
+          </Space>
         </Space>
-      </Space>
+      </div>
     </Space>
   );
 };

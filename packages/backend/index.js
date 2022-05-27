@@ -18,6 +18,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const EIP712_DOMAIN = {
   name: "Scaffold-eth EIP-712",
   version: "1.0.0",
+  // --- Other fields
+  // chainId
+  // verifyingContract
 };
 
 /**

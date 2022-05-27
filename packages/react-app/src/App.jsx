@@ -8,7 +8,7 @@ import "./App.css";
 import { Account, Faucet, GasGauge, Header, Ramp, ThemeSwitch, NetworkDisplay, NetworkSwitch } from "./components";
 import { NETWORKS, ALCHEMY_KEY } from "./constants";
 import { Web3ModalSetup } from "./helpers";
-import { SignMessage, ExampleUI } from "./views";
+import { SignMessage } from "./views";
 import { useStaticJsonRPC } from "./hooks";
 
 const { ethers } = require("ethers");
@@ -194,23 +194,11 @@ function App(props) {
         <Menu.Item key="/">
           <Link to="/">Sign Message</Link>
         </Menu.Item>
-        <Menu.Item key="/exampleui">
-          <Link to="/exampleui">ExampleUI</Link>
-        </Menu.Item>
       </Menu>
 
       <Switch>
         <Route exact path="/">
           <SignMessage userSigner={userSigner} />
-        </Route>
-        <Route path="/exampleui">
-          <ExampleUI
-            address={address}
-            userSigner={userSigner}
-            mainnetProvider={mainnetProvider}
-            localProvider={localProvider}
-            price={price}
-          />
         </Route>
       </Switch>
 
