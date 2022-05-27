@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { Button, Checkbox, Input, notification, Space, Tooltip } from "antd";
+import { Button, Checkbox, Input, notification, Space, Tooltip, Typography } from "antd";
 import axios from "axios";
 import useTypedSigner from "../hooks/useTypedSigner";
-import Text from "antd/es/typography/Text";
-import { Link } from "react-router-dom";
+const { Text, Link } = Typography;
 
 const serverUrl = "http://localhost:49832";
 // Send New Message Request to server.
@@ -163,7 +162,7 @@ const SignMessage = ({ userSigner }) => {
               Sign & Send
             </Button>
             {lastPayload && (
-              <Tooltip title="We'll sign the same values and send them to the server">
+              <Tooltip title="Send the previous payload (values + signature) to the server">
                 <Button onClick={sendReplayAttack} type="primary" danger>
                   Attempt reply attack
                 </Button>
